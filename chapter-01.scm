@@ -92,16 +92,76 @@ Slurpage & barfage
 	((= c (min a b c)) (sum-of-squares a b))))
 
 (check-equal? 52 (square-of-top 2 4 6))
-(check-equal? 52 (square-of-top 4 2 6)) 
+(check-equal? 52 (square-of-top 4 2 6))
 (check-equal? 52 (square-of-top 6 4 2))
 
 
 ;; Mathy solution: got this one from the net
-(define (square-two-largest a b c) 
+(define (square-two-largest a b c)
  (- (+ (* a a) (* b b) (* c c))
-    (* (min a b c) (min a b c)))) 
+    (* (min a b c) (min a b c))))
 
 (check-equal? 52 (square-two-largest 2 4 6))
 (check-equal? 52 (square-two-largest 4 2 6))
 (check-equal? 52 (square-two-largest 6 4 2))
 
+;; Exercise 1.4: Observe that our model of evaluation allows
+;; for combinations whose operators are compound expressions. Use this observation to describe the behavior of the
+;; following procedure:
+
+(set! a 1)
+(set! b 2)
+(define (a-plus-abs-b a b)
+	((if (> b 0) + -) a b))
+
+; When true, the if expression get reduces as:
+;((if #t + -) 2 3); result=5, same as:
+;(+ 2 3); result=5
+
+; When false, the if expression get reduces as:
+;((if #f + -) 2 3); result=-1, same as:
+;(- 2 3); result=-1
+
+
+#|
+Exercise 1.5:
+
+Ben Bitdiddle has invented a test to determine whether the interpreter he is faced with is using
+applicativeorder evaluation or normal-order evaluation. He defines the following two procedures:
+
+(define (p) (p))
+
+(define (test x y)
+  (if (= x 0) 0 y))
+
+en he evaluates the expression:
+
+(test 0 (p))
+
+What behavior will Ben observe with an interpreter that uses applicative-order evaluation?
+What behavior will he observe with an interpreter that uses normal-order evaluation?
+
+Explain your answer.
+
+In normal-order evaluation, the inner parens will be evaluated first.
+
+(test 0 (p)); evaluates to
+(test 0 (p)); evaluates to
+(test 0 (p)); evaluates to
+(test 0 (p)); etc.
+
+Because (p) is evaluated first, but since (p) is returned we enter an infinite loop.
+
+
+In applicative-order evalution, the evaluation would have been:
+(test 0 (p)); evaluates to
+(if (= 0 0) 0 (p)); evaluates to
+(if #t 0 (p)); evaluates to
+0
+
+|#
+
+(define (p) (p))
+
+(define (test x y)
+  (if (= x 0) 0 y))
