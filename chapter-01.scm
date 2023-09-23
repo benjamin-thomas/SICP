@@ -161,7 +161,116 @@ In applicative-order evalution, the evaluation would have been:
 
 |#
 
-(define (p) (p))
 
-(define (test x y)
-  (if (= x 0) 0 y))
+
+; Implementing square roots with Newton's method
+(define (square x)
+  (* x x))
+
+(define (good-enough? guess x)
+  (< (abs (- (square guess) x)) 0.001))
+
+;Exercise 1.6
+(define (new-if predicate
+                then-clause
+                else-clause)
+  (cond (predicate then-clause)
+        (else else-clause)))
+
+(define (sqrt-iter guess x)
+  (if (good-enough? guess x)
+  ;(new-if (good-enough? guess x)
+      guess
+      (sqrt-iter (improve guess x)
+                 x)))
+
+(define (average x y)
+  (/ (+ x y) 2))
+
+(define (improve guess x)
+  (average guess (/ x guess)))
+
+(define (sqrt x)
+  (sqrt-iter 1.0 x))
+
+#|
+Exercise 1.6
+============
+
+Define `new-if` and observe that it won't be usable with recursion.
+
+Answer:
+=======
+
+We enter an infinite loop because of Lisp's applicative-order evaluation.
+Both branches of `new-if` get evaluated, thus we recursively evaluate the false branch (even when the a branch is true).
+
+(add (* 2 2) (* 3 3)) ; evaluates to:
+(add 4 9) ; evaluates to:
+13
+
+We can also easily see this by tracing the function `new-if`
+============================================================
+
+(trace new-if)
+
+1 ]=> (new-if #f 1 (+ 1 1))
+
+[Entering #[compound-procedure 13 new-if]
+    Args: #f
+          1
+          2]
+[2
+      <== #[compound-procedure 13 new-if]
+    Args: #f
+          1
+          2]
+;Value: 2
+
+1 ]=> (new-if #t 1 (+ 1 1))
+
+[Entering #[compound-procedure 13 new-if]
+    Args: #t
+          1
+          2]
+[1
+      <== #[compound-procedure 13 new-if]
+    Args: #t
+          1
+          2]
+;Value: 1
+
+Here, we can easily see that (+ 1 1) is always evaluated.
+
+`if` is a special form that evaluates the predicate first, then evaluates branch a OR branch b.
+
+
+============
+*** NOTE ***
+============
+
+To debug the program, here's how to proceed:
+
+Step 1: set a break
+-------------------
+
+(define (sqrt-iter guess x)
+ (bkpt guess x); <-- break point here, the arguments will be printed when hitting the breakpoint
+ (new-if (good-enough? guess x)
+      guess
+      (sqrt-iter (improve guess x)
+                 x)))
+
+
+
+Step 2: load the program
+-------------------------
+Something like `rlwrap mit-scheme --load ./debug.scm`
+
+Step 3: advance in the program
+------------------------------
+(continue)
+
+I could not find any other debugging commands unfortunatly.
+|#
+(sqrt 25)
