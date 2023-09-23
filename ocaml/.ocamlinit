@@ -1,0 +1,3 @@
+#use_output "dune ocaml top";;
+open Sicp;;
+open Chapter01;;
